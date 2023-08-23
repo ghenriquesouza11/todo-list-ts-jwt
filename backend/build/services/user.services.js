@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,10 +35,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const User_model_1 = __importDefault(require("../database/models/User.model"));
+const bcrypt = __importStar(require("bcrypt"));
+const jwtUtils = require("../utils/jwt.utils");
 const createUser = (userInfo) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = userInfo;
-    const createdUser = (yield User_model_1.default.create({ name, email, password })).toJSON();
-    return { status: 200, data: createdUser };
+    const salt = yield bcrypt.genSalt(10);
+    const hashedPassword = yield bcrypt.hash(password, salt);
+    const createdUser = (yield User_model_1.default.create({ name, email, password: hashedPassword })).toJSON();
+    const payload = {
+        id: createdUser.id,
+        email: createdUser.email,
+    };
+    const token = jwtUtils.sign(payload);
+    return { status: 201, data: token };
 });
 module.exports = {
     createUser,
