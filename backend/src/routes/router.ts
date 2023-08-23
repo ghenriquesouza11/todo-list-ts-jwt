@@ -1,7 +1,8 @@
 import express from 'express';
+import userRoutes from './user/user.routes';
 
 const router = express.Router();
 
-router.get('/', (req, res) => res.status(200).json({message: 'API funcionando!'}));
+router.use(userRoutes);
 
 export default router;
